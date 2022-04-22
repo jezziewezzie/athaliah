@@ -18,4 +18,17 @@ for (const file of command_files) {
 	client.commands.set(command.data.name, command);
 }
 
+const event_files = fs
+	.readdirSync('./events')
+	.filter((file) => file.endsWith('.js'));
+
+for (const file of event_files) {
+	const event = require(`./events/${file}`);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
+
 client.login(token);
