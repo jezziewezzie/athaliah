@@ -18,17 +18,23 @@ for (const file of command_files) {
 	client.commands.set(command.data.name, command);
 }
 
-const event_files = fs
-	.readdirSync('./events')
-	.filter((file) => file.endsWith('.js'));
+client.once('ready', () => {
+	console.log(`Ready! Logged in as ${client.user.tag}`);
+});
 
-for (const file of event_files) {
-	const event = require(`./events/${file}`);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+client.on('interactionCreate', async (interaction) => {
+	if (!interaction.isCommand()) return;
+
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'error!', ephemeral: true });
 	}
-}
+});
 
 client.login(token);
